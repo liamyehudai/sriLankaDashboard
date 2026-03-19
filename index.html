@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sri Lanka Energy Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Tooltip transition for smooth movement */
+        #tooltip {
+            transition: left 0.2s ease-out, top 0.2s ease-out, opacity 0.2s;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-900 via-emerald-950 to-stone-950 text-emerald-50 font-sans overflow-x-hidden relative">
+
+    <!-- Solarpunk Ambient Lighting -->
+    <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-yellow-400/10 blur-[120px] rounded-full pointer-events-none z-0"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none z-0"></div>
+
+    <div class="max-w-7xl mx-auto p-4 md:p-8 relative z-10">
+        
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 border-b border-emerald-500/30 pb-6">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-emerald-800/50 rounded-xl border border-emerald-400/30 shadow-[0_0_15px_rgba(52,211,153,0.3)]">
+                    <i data-lucide="leaf" class="w-8 h-8 text-emerald-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-yellow-200">
+                        Project Lanka: Net Zero
+                    </h1>
+                    <p class="text-emerald-300/80 text-sm md:text-base font-medium mt-1">
+                        Visualizing the 2030 Renewable Master Plan
+                    </p>
+                </div>
+            </div>
+
+            <!-- Minimalist Flag SVG -->
+            <div class="flex items-center gap-3 bg-emerald-900/40 p-2 pr-4 rounded-lg border border-emerald-700/50 backdrop-blur-sm">
+                <img 
+                    src="https://flagcdn.com/w80/lk.png" 
+                    srcset="https://flagcdn.com/w160/lk.png 2x"
+                    alt="Sri Lanka Flag" 
+                    class="w-14 h-7 object-cover shadow-[0_0_10px_rgba(253,224,71,0.2)] rounded-[2px]"
+                />
+                <span class="text-sm font-semibold text-emerald-100 tracking-wider">LKA</span>
+            </div>
+        </header>
+
+        <!-- Main Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          
+            <!-- Left Column: The Line Chart -->
+            <div class="lg:col-span-2 bg-emerald-900/30 backdrop-blur-md border border-emerald-500/20 rounded-2xl p-6 shadow-xl relative">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-emerald-100 flex items-center gap-2">
+                            <i data-lucide="droplets" class="w-5 h-5 text-teal-400"></i>
+                            The Monsoon Rollercoaster
+                        </h2>
+                        <p class="text-emerald-400/70 text-sm mt-1">
+                            Monthly renewable energy percentage fluctuations (Hydro, Solar, Wind)
+                        </p>
+                    </div>
+                    <div class="px-3 py-1 bg-teal-950 border border-teal-500/50 rounded-full text-xs font-bold text-teal-300 shadow-[0_0_10px_rgba(45,212,191,0.2)]">
+                        Target 2030: 70% Avg
+                    </div>
+                </div>
+
+                <!-- Interactive SVG Line Chart Container -->
+                <div id="chart-container" class="w-full relative h-[300px]">
+                    <!-- SVG will be injected here by JavaScript -->
+                    
+                    <!-- HTML Overlay Tooltip -->
+                    <div id="tooltip" class="absolute z-20 bg-emerald-950/90 backdrop-blur-md border border-emerald-400 p-3 rounded-lg shadow-[0_0_20px_rgba(16,185,129,0.3)] pointer-events-none transform -translate-x-1/2 -translate-y-[120%] w-48 opacity-0 hidden">
+                        <div id="tooltip-value" class="text-yellow-300 font-bold text-lg mb-1"></div>
+                        <div id="tooltip-driver" class="text-emerald-100 text-xs leading-tight"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Map Fill Chart -->
+            <div class="bg-emerald-900/30 backdrop-blur-md border border-emerald-500/20 rounded-2xl p-6 shadow-xl flex flex-col items-center relative overflow-hidden">
+                <div class="w-full mb-4">
+                    <h2 class="text-xl font-bold text-emerald-100 flex items-center gap-2">
+                        <i data-lucide="zap" class="w-5 h-5 text-yellow-400"></i>
+                        Year-Round Grid Mix
+                    </h2>
+                    <p class="text-emerald-400/70 text-sm mt-1">
+                        Average annual generation split
+                    </p>
+                </div>
+
+                <!-- Map SVG -->
+                <div class="relative w-[180px] h-[280px] my-auto">
+                    <!-- Outer Glow -->
+                    <div class="absolute inset-0 bg-emerald-500/10 blur-[30px] rounded-full pointer-events-none"></div>
+                    
+                    <!-- We wrap the SVG in a container so JS can replace it with the high-fi version -->
+                    <div id="map-svg-container" class="w-full h-full z-10 relative">
+                        <svg viewBox="0 0 140 250" class="w-full h-full drop-shadow-2xl z-10 relative">
+                            <defs>
+                                <clipPath id="sl-clip">
+                            
+                            <linearGradient id="solarGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#fde047" />
+                                <stop offset="100%" stop-color="#eab308" />
+                            </linearGradient>
+                            <linearGradient id="hydroGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#2dd4bf" />
+                                <stop offset="100%" stop-color="#0f766e" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Base Stroke -->
+                        <path 
+                            d="M 85 5 L 95 10 L 98 18 L 92 23 L 90 28 L 98 35 L 105 45 L 112 55 L 114 62 L 110 68 L 115 72 L 122 85 L 128 100 L 133 115 L 135 130 L 132 145 L 126 165 L 118 185 L 105 210 L 90 225 L 75 235 L 60 238 L 45 235 L 35 225 L 25 210 L 18 190 L 12 165 L 14 145 L 16 125 L 18 105 L 22 90 L 15 80 L 8 72 L 12 65 L 28 68 L 38 58 L 48 45 L 58 35 L 65 25 L 60 18 L 70 12 L 78 8 Z" 
+                            fill="none" 
+                            stroke="#059669" 
+                            stroke-width="2"
+                            stroke-linejoin="round"
+                        />
+
+                        <!-- Animated Stacked Fills -->
+                        <g clip-path="url(#sl-clip)">
+                            <!-- Solar/Wind 14% -> Backmost base layer -->
+                            <rect x="0" y="0" width="140" height="250" fill="url(#solarGrad)" />
+                            
+                            <!-- Hydro 41% -> Boundary at y=35 -->
+                            <path d="M 0 35 Q 35 42, 70 35 T 140 35 T 210 35 T 280 35 L 280 250 L 0 250 Z" fill="url(#hydroGrad)" opacity="0.6">
+                                <animateTransform attributeName="transform" type="translate" from="-140 0" to="0 0" dur="7s" repeatCount="indefinite" />
+                            </path>
+                            <path d="M 0 35 Q 35 46, 70 35 T 140 35 T 210 35 T 280 35 L 280 250 L 0 250 Z" fill="url(#hydroGrad)">
+                                <animateTransform attributeName="transform" type="translate" from="0 0" to="-140 0" dur="5s" repeatCount="indefinite" />
+                            </path>
+
+                            <!-- Coal 30% -> Boundary at y=137.5 -->
+                            <path d="M 0 137.5 Q 35 143.5, 70 137.5 T 140 137.5 T 210 137.5 T 280 137.5 L 280 250 L 0 250 Z" fill="#44403c" opacity="0.8">
+                                <animateTransform attributeName="transform" type="translate" from="0 0" to="-140 0" dur="8s" repeatCount="indefinite" />
+                            </path>
+                            <path d="M 0 137.5 Q 35 147.5, 70 137.5 T 140 137.5 T 210 137.5 T 280 137.5 L 280 250 L 0 250 Z" fill="#44403c">
+                                <animateTransform attributeName="transform" type="translate" from="-140 0" to="0 0" dur="6s" repeatCount="indefinite" />
+                            </path>
+
+                            <!-- Oil 15% -> Boundary at y=212.5 -->
+                            <path d="M 0 212.5 Q 35 218.5, 70 212.5 T 140 212.5 T 210 212.5 T 280 212.5 L 280 250 L 0 250 Z" fill="#171717" opacity="0.7">
+                                <animateTransform attributeName="transform" type="translate" from="-140 0" to="0 0" dur="9s" repeatCount="indefinite" />
+                                <path d="M 0 212.5 Q 35 215.5, 70 212.5 T 140 212.5 T 210 212.5 T 280 212.5 L 280 250 L 0 250 Z" fill="#171717">
+                                    <animateTransform attributeName="transform" type="translate" from="0 0" to="-140 0" dur="7s" repeatCount="indefinite" />
+                                </path>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Custom Map Legend -->
+                <div class="w-full mt-4 space-y-2 text-sm font-medium border-t border-emerald-500/30 pt-4">
+                    <div class="flex justify-between items-center group">
+                        <div class="flex items-center gap-2 text-yellow-300">
+                            <div class="w-3 h-3 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.6)]"></div>
+                            <i data-lucide="sun" class="w-4 h-4"></i> Solar & Wind
+                        </div>
+                        <span class="text-yellow-100">14%</span>
+                    </div>
+                    <div class="flex justify-between items-center group">
+                        <div class="flex items-center gap-2 text-teal-300">
+                            <div class="w-3 h-3 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.6)]"></div>
+                            <i data-lucide="droplets" class="w-4 h-4"></i> Hydropower
+                        </div>
+                        <span class="text-teal-100">41%</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2 text-stone-400">
+                            <div class="w-3 h-3 rounded-full bg-stone-600"></div>
+                            Coal
+                        </div>
+                        <span class="text-stone-300">30%</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2 text-stone-500">
+                            <div class="w-3 h-3 rounded-full bg-stone-900 border border-stone-700"></div>
+                            Oil & Diesel
+                        </div>
+                        <span class="text-stone-400">15%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Section: Oil Crisis Alert -->
+        <div class="bg-gradient-to-br from-red-950/80 to-stone-900/80 backdrop-blur-xl border border-red-500/50 rounded-2xl p-6 md:p-8 shadow-[0_0_40px_rgba(220,38,38,0.15)] relative overflow-hidden">
+          
+            <!-- Danger Background Elements -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-red-600/10 blur-[80px] rounded-full pointer-events-none"></div>
+            <i data-lucide="flame" class="absolute -bottom-10 -right-4 w-48 h-48 text-red-500/5 rotate-12 pointer-events-none"></i>
+
+            <div class="relative z-10 flex flex-col md:flex-row gap-8 items-start">
+                <div class="bg-red-500/10 p-4 rounded-full border border-red-500/30 shrink-0">
+                    <i data-lucide="alert-triangle" class="w-10 h-10 text-red-400 drop-shadow-[0_0_10px_rgba(248,113,113,0.8)]"></i>
+                </div>
+                
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                        <h2 class="text-2xl font-bold text-red-300 tracking-wide">
+                            March 2026 Crisis: The Strait of Hormuz
+                        </h2>
+                        <span class="px-2 py-1 bg-red-900/50 text-red-200 text-xs font-bold rounded border border-red-500/50 animate-pulse">
+                            ACTIVE ALERT
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                        <div class="space-y-4 text-red-100/80 text-sm leading-relaxed">
+                            <p>
+                                <strong class="text-red-200">The Global Chokepoint:</strong> Recent regional conflict has led to the effective closure of the Strait of Hormuz. This narrow 33km waterway normally handles <strong class="text-white">~20% of the global oil supply</strong>, and crucially, over <strong class="text-white">80% of Asia's crude oil imports</strong> pass through it.
+                            </p>
+                            <p>
+                                <strong class="text-red-200">The Threat to Sri Lanka:</strong> As a nation that imports nearly 100% of its fuel, the impact is devastating. The state-run Sapugaskanda refinery relies entirely on Middle Eastern crude. The closure has severed supply chains and triggered a massive surge in global spot market prices.
+                            </p>
+                        </div>
+
+                        <div class="flex flex-col gap-4">
+                            <div class="bg-red-900/30 border border-red-500/20 rounded-xl p-4 flex gap-4 items-center">
+                                <i data-lucide="ship" class="w-8 h-8 text-amber-500 shrink-0"></i>
+                                <div>
+                                    <h4 class="font-bold text-amber-300">Supply Dependency</h4>
+                                    <p class="text-xs text-amber-100/70 mt-1">Sri Lanka's foreign reserves sit at roughly $6.8B—only enough to fund ~3 months of critical fuel, food, and medicine imports at surging prices.</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-stone-900/50 border border-stone-600/50 rounded-xl p-4 flex gap-4 items-center">
+                                <i data-lucide="battery" class="w-8 h-8 text-red-400 shrink-0"></i>
+                                <div>
+                                    <h4 class="font-bold text-red-300">Emergency Rationing</h4>
+                                    <p class="text-xs text-stone-300/80 mt-1">To conserve dwindling supplies, the government has been forced to mandate a nationwide <strong>4-day workweek</strong> and strictly limit nighttime EV charging.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 p-4 bg-emerald-950/40 border-l-4 border-emerald-500 rounded-r-lg flex gap-3 items-start">
+                        <i data-lucide="info" class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0"></i>
+                        <p class="text-emerald-100/90 text-sm">
+                            <strong class="text-emerald-300">The Solarpunk Imperative:</strong> This severe external shock brutally highlights the dangers of the bottom 15% "Oil" layer in the generation mix. Accelerating the transition to localized Solar and Wind is no longer just an environmental goal; it is a matter of absolute national survival and economic sovereignty.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Initialization and Chart Logic -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Chart Data
+        const monthlyData = [
+            { month: 'Jan', value: 57, driver: 'NE Monsoon Reservoirs Healthy' },
+            { month: 'Feb', value: 52, driver: 'Dry Season Begins' },
+            { month: 'Mar', value: 46.5, driver: 'Peak Dry Season (Fossil Heavy)' },
+            { month: 'Apr', value: 47.5, driver: 'Inter-monsoon Showers Start' },
+            { month: 'May', value: 57.5, driver: 'SW Monsoon Arrives' },
+            { month: 'Jun', value: 71.5, driver: 'Peak Monsoon (Historic Milestone)' },
+            { month: 'Jul', value: 66, driver: 'Steady Rains Continue' },
+            { month: 'Aug', value: 62.5, driver: 'Monsoon Tapering Off' },
+            { month: 'Sep', value: 57.5, driver: 'Transitional Dry Period' },
+            { month: 'Oct', value: 62.5, driver: 'Island-wide Storms' },
+            { month: 'Nov', value: 66.5, driver: 'NE Monsoon Peaks' },
+            { month: 'Dec', value: 60, driver: 'Consistent Year-End Output' },
+        ];
+
+        // Chart Configuration
+        const SVG_WIDTH = 600;
+        const SVG_HEIGHT = 280;
+        const Y_MIN = 40;
+        const Y_MAX = 80;
+
+        // Calculate Points
+        const pointsData = monthlyData.map((d, i) => {
+            const x = 50 + (i * (500 / 11));
+            const y = SVG_HEIGHT - 30 - ((d.value - Y_MIN) / (Y_MAX - Y_MIN)) * (SVG_HEIGHT - 60);
+            return { ...d, x, y };
+        });
+
+        // Generate Line Path
+        const linePath = `M ${pointsData.map(p => `${p.x},${p.y}`).join(' L ')}`;
+
+        // Build SVG HTML
+        let svgContent = `
+            <svg viewBox="0 0 ${SVG_WIDTH} ${SVG_HEIGHT}" class="w-full h-full overflow-visible">
+                <defs>
+                    <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stop-color="#34d399" />
+                        <stop offset="50%" stop-color="#fde047" />
+                        <stop offset="100%" stop-color="#34d399" />
+                    </linearGradient>
+                </defs>
+        `;
+
+        // Y-Axis Grid Lines
+        [40, 50, 60, 70, 80].forEach(val => {
+            const y = SVG_HEIGHT - 30 - ((val - Y_MIN) / (Y_MAX - Y_MIN)) * (SVG_HEIGHT - 60);
+            svgContent += `
+                <g>
+                    <line x1="40" y1="${y}" x2="560" y2="${y}" stroke="#065f46" stroke-width="1" stroke-dasharray="${val === 70 ? 'none' : '4 4'}" />
+                    <text x="35" y="${y + 4}" fill="${val === 70 ? '#34d399' : '#6ee7b7'}" font-size="10" text-anchor="end" opacity="0.8">
+                        ${val}%
+                    </text>
+                </g>
+            `;
+        });
+
+        // 70% Target Line Highlight
+        const targetY = SVG_HEIGHT - 30 - ((70 - Y_MIN) / (Y_MAX - Y_MIN)) * (SVG_HEIGHT - 60);
+        svgContent += `<line x1="40" y1="${targetY}" x2="560" y2="${targetY}" stroke="#10b981" stroke-width="2" stroke-opacity="0.4" />`;
+
+        // Data Line
+        svgContent += `<path d="${linePath}" fill="none" stroke="url(#lineGradient)" stroke-width="4" class="drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]" />`;
+
+        // Data Points & Labels
+        pointsData.forEach((d, i) => {
+            svgContent += `
+                <g>
+                    <text x="${d.x}" y="${SVG_HEIGHT - 5}" fill="#a7f3d0" font-size="12" text-anchor="middle" opacity="0.8">
+                        ${d.month}
+                    </text>
+                    <circle 
+                        cx="${d.x}" cy="${d.y}" r="6" 
+                        fill="#064e3b" stroke="#34d399" stroke-width="2" 
+                        class="cursor-pointer transition-all duration-200 hover:stroke-yellow-300 data-point"
+                        data-index="${i}"
+                    />
+                </g>
+            `;
+        });
+
+        svgContent += `</svg>`;
+
+        // Insert SVG into container
+        const chartContainer = document.getElementById('chart-container');
+        chartContainer.insertAdjacentHTML('afterbegin', svgContent);
+
+        // Interactive Tooltip Logic
+        const tooltip = document.getElementById('tooltip');
+        const tooltipValue = document.getElementById('tooltip-value');
+        const tooltipDriver = document.getElementById('tooltip-driver');
+        const dataPoints = document.querySelectorAll('.data-point');
+
+        dataPoints.forEach(point => {
+            point.addEventListener('mouseenter', (e) => {
+                const index = e.target.getAttribute('data-index');
+                const data = pointsData[index];
+                
+                tooltipValue.textContent = `${data.value}% Renewable`;
+                tooltipDriver.textContent = data.driver;
+                
+                // Position based on percentage to handle responsiveness seamlessly
+                tooltip.style.left = `${(data.x / SVG_WIDTH) * 100}%`;
+                tooltip.style.top = `${(data.y / SVG_HEIGHT) * 100}%`;
+                
+                tooltip.classList.remove('hidden');
+                // Small delay to ensure display:block applies before transition
+                setTimeout(() => tooltip.classList.remove('opacity-0'), 10);
+            });
+        });
+
+        // Hide tooltip when mouse leaves the chart container
+        chartContainer.addEventListener('mouseleave', () => {
+            tooltip.classList.add('opacity-0');
+            setTimeout(() => {
+                if(tooltip.classList.contains('opacity-0')){
+                    tooltip.classList.add('hidden');
+                }
+            }, 200); // match transition duration
+        });
+
+        // Load the High-Fidelity Uploaded Map Dynamically
+        async function initHighFidelityMap() {
+            try {
+                // Fetch the uploaded SVG file
+                const response = await fetch('SriLanka.svg');
+                if (!response.ok) return; // Silent fail, keep the fallback shape
+                
+                const svgText = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(svgText, 'image/svg+xml');
+                const originalSvg = doc.querySelector('svg');
+                
+                if (!originalSvg) return;
+
+                // Extract or default the original viewBox
+                let vb = originalSvg.getAttribute('viewBox');
+                let vbX = 0, vbY = 0, vbW = 140, vbH = 250;
+                if (vb) {
+                    [vbX, vbY, vbW, vbH] = vb.split(/[\s,]+/).map(parseFloat);
+                } else {
+                    vbW = parseFloat(originalSvg.getAttribute('width')) || 140;
+                    vbH = parseFloat(originalSvg.getAttribute('height')) || 250;
+                    vb = `0 0 ${vbW} ${vbH}`;
+                }
+
+                // Prepare a clean copy of the paths for the clip mask
+                const clipSvg = originalSvg.cloneNode(true);
+                clipSvg.querySelectorAll('rect').forEach(r => {
+                    const w = r.getAttribute('width') || '';
+                    if (w.includes('%') || parseFloat(w) >= vbW * 0.9) r.remove(); // Remove background rects
+                });
+                clipSvg.querySelectorAll('text, style, script, defs').forEach(e => e.remove());
+                const clipPathContent = clipSvg.innerHTML;
+                
+                // Prepare a clean copy for the outer green stroke
+                const outlineSvg = clipSvg.cloneNode(true);
+                outlineSvg.querySelectorAll('path, polygon, polyline').forEach(el => {
+                    el.setAttribute('fill', 'none');
+                    el.setAttribute('stroke', '#059669');
+                    el.setAttribute('stroke-width', '2');
+                    el.setAttribute('vector-effect', 'non-scaling-stroke'); // Ensures stroke stays crisp regardless of viewBox
+                    el.setAttribute('stroke-linejoin', 'round');
+                });
+                const outlineContent = outlineSvg.innerHTML;
+
+                // Dynamically calculate wave boundaries based on the actual map height
+                const h = vbH;
+                const w = vbW;
+                const yHydro = vbY + h * 0.14;   // 14% line
+                const yCoal  = vbY + h * 0.55;   // 14 + 41 = 55% line
+                const yOil   = vbY + h * 0.85;   // 55 + 30 = 85% line
+                const waveAmp = h * 0.03;        // 3% amplitude based on height
+
+                // Helper to create seamless infinite waves relative to the new viewBox
+                const makeWave = (yBase, amp) => {
+                    return `M ${vbX} ${yBase} 
+                            Q ${vbX + w*0.25} ${yBase + amp}, ${vbX + w*0.5} ${yBase} 
+                            T ${vbX + w} ${yBase} 
+                            T ${vbX + w*1.5} ${yBase} 
+                            T ${vbX + w*2} ${yBase} 
+                            L ${vbX + w*2} ${vbY + h} 
+                            L ${vbX} ${vbY + h} Z`;
+                };
+
+                // Build the final composite SVG using the authentic paths
+                const compositeSvg = `
+                    <svg viewBox="${vb}" class="w-full h-full drop-shadow-2xl relative" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <clipPath id="sl-clip-dynamic">
+                                ${clipPathContent}
+                            </clipPath>
+                            <linearGradient id="solarGradDyn" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#fde047" />
+                                <stop offset="100%" stop-color="#eab308" />
+                            </linearGradient>
+                            <linearGradient id="hydroGradDyn" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#2dd4bf" />
+                                <stop offset="100%" stop-color="#0f766e" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- The Animated Liquid Fills (Masked exactly to the high-fi map shape) -->
+                        <g clip-path="url(#sl-clip-dynamic)">
+                            <!-- Solar Base Layer -->
+                            <rect x="${vbX}" y="${vbY}" width="${w}" height="${h}" fill="url(#solarGradDyn)" />
+                            
+                            <!-- Hydro Layers -->
+                            <path d="${makeWave(yHydro, waveAmp * 1.5)}" fill="url(#hydroGradDyn)" opacity="0.6">
+                                <animateTransform attributeName="transform" type="translate" from="-${w} 0" to="0 0" dur="7s" repeatCount="indefinite" />
+                            </path>
+                            <path d="${makeWave(yHydro, waveAmp * 2.5)}" fill="url(#hydroGradDyn)">
+                                <animateTransform attributeName="transform" type="translate" from="0 0" to="-${w} 0" dur="5s" repeatCount="indefinite" />
+                            </path>
+
+                            <!-- Coal Layers -->
+                            <path d="${makeWave(yCoal, waveAmp * 1.5)}" fill="#44403c" opacity="0.8">
+                                <animateTransform attributeName="transform" type="translate" from="0 0" to="-${w} 0" dur="8s" repeatCount="indefinite" />
+                            </path>
+                            <path d="${makeWave(yCoal, waveAmp * 2.5)}" fill="#44403c">
+                                <animateTransform attributeName="transform" type="translate" from="-${w} 0" to="0 0" dur="6s" repeatCount="indefinite" />
+                            </path>
+
+                            <!-- Oil Layers -->
+                            <path d="${makeWave(yOil, waveAmp * 1.5)}" fill="#171717" opacity="0.7">
+                                <animateTransform attributeName="transform" type="translate" from="-${w} 0" to="0 0" dur="9s" repeatCount="indefinite" />
+                            </path>
+                            <path d="${makeWave(yOil, waveAmp * 2.5)}" fill="#171717">
+                                <animateTransform attributeName="transform" type="translate" from="0 0" to="-${w} 0" dur="7s" repeatCount="indefinite" />
+                            </path>
+                        </g>
+                        
+                        <!-- Top Stroke Outline to keep borders crisp over the liquid -->
+                        <g opacity="0.9">
+                            ${outlineContent}
+                        </g>
+                    </svg>
+                `;
+                
+                // Replace the fallback map
+                const container = document.getElementById('map-svg-container');
+                if (container) {
+                    container.innerHTML = compositeSvg;
+                }
+            } catch (e) {
+                console.warn("Could not parse high-fidelity map, falling back to original shape.", e);
+            }
+        }
+
+        // Initialize the fetch mechanism
+        initHighFidelityMap();
+
+    </script>
+</body>
+</html>
